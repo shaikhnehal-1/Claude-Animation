@@ -1,10 +1,12 @@
 {
-  "name": "studio",
+  "name": "doom-studio",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preview": "remotion studio src/index.ts",
+    "render:style": "remotion render src/index.ts StyleTest out/style-test.mp4",
+    "still:style": "remotion still src/index.ts StyleTest out/style-test.jpg --frame=40"
   },
   "keywords": [],
   "author": "",
@@ -21,5 +23,6 @@
     "react-dom": "^18.3.1",
     "remotion": "^4.0.300",
     "three": "^0.170.0"
-  }
+  },
+  "private": true
 }
