@@ -10,12 +10,13 @@ export const W = 1920;
 export const H = 1080;
 
 /** Full-frame 16:9 3D viewport with filmic post-processing. */
-export const Stage: React.FC<{children: React.ReactNode; post?: React.ReactNode}> = ({children, post}) => (
+export const Stage: React.FC<{children: React.ReactNode; post?: React.ReactNode; dpr?: number}> = ({children, post, dpr = (globalThis as any).__DPR ?? 1}) => (
   <ThreeCanvas
     width={W}
     height={H}
     style={{position: 'absolute', top: 0, left: 0}}
     shadows
+    dpr={dpr}
     gl={{antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance'}}
     onCreated={({gl}) => {
       gl.toneMapping = THREE.NoToneMapping; // tone mapping happens in post
@@ -36,8 +37,8 @@ export const Post: React.FC<{focus?: number; blur?: number; bloom?: number; vign
   // postprocessing's DoF takes normalized focus distance
   const fd = Math.min(1, (focus - cam.near) / (cam.far - cam.near));
   return (
-    <EffectComposer multisampling={4} enableNormalPass={false}>
-      <DepthOfField focusDistance={fd} focalLength={0.004} bokehScale={blur} />
+    <EffectComposer multisampling={0} enableNormalPass={false}>
+      {blur > 0 ? <DepthOfField focusDistance={fd} focalLength={0.004} bokehScale={blur} height={270} /> : <></>}
       <Bloom mipmapBlur intensity={bloom} luminanceThreshold={0.62} luminanceSmoothing={0.25} radius={0.75} />
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette eskil={false} offset={0.25} darkness={vignette} />
@@ -61,7 +62,11 @@ export const Sky: React.FC<{hdri: string; intensity?: number; envIntensity?: num
     scene.backgroundBlurriness = blur;
     scene.backgroundRotation.set(0, rotation, 0);
     scene.environmentRotation.set(0, rotation, 0);
-    scene.fog = fogDensity > 0 ? new THREE.FogExp2(fog, fogDensity) : null;
+    if (fogDensity <= 0) scene.fog = null;
+    else if (scene.fog instanceof THREE.FogExp2) {
+      scene.fog.color.set(fog);
+      scene.fog.density = fogDensity;
+    } else scene.fog = new THREE.FogExp2(fog, fogDensity);
   });
   return null;
 };

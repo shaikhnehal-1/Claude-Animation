@@ -108,14 +108,13 @@ const VillageLights: React.FC<{t: number}> = ({t}) => {
 };
 
 /** The castle battlement walkway at night (camera looks down -Z). */
-export const CastleWall: React.FC<{t: number; torches?: boolean}> = ({t, torches = true}) => {
+export const CastleWall: React.FC<{t: number; torches?: boolean; skip?: string[]}> = ({t, torches = true, skip = []}) => {
   const brick = usePBR('castle_wall_varriation');
   const slates = usePBR('castle_wall_slates');
   const cobble = usePBR('cobblestone_floor_04');
   const rock = usePBR('defense_wall');
   const barrels = usePHModel('wooden_barrels_01');
   const crate = usePHModel('wooden_crate_01');
-  const shield = usePHModel('kite_shield');
   const door = usePHModel('large_castle_door');
 
   const M = useMemo(() => {
@@ -158,20 +157,22 @@ export const CastleWall: React.FC<{t: number; torches?: boolean}> = ({t, torches
         <LitWindow key={i} position={[-WALK_W / 2 + 0.005, 3.2, z]} rotY={Math.PI / 2} w={0.7} h={1.3} on={i === 2 ? 0.2 : 1} />
       ))}
       {door ? <primitive object={door.scene.clone()} position={[-WALK_W / 2 + 0.02, 0, -8]} rotation={[0, Math.PI / 2, 0]} scale={0.75} /> : null}
-      {/* end tower */}
+      {skip.includes('towers') ? null : <>
       <Tower position={[0.6, -26, -L + 2]} r={3.4} h={44} wall={M.tower} roof={M.roof} windows={4} seed={3} />
       {/* far towers across the valley */}
       <Tower position={[34, -26, -70]} r={3} h={40} wall={M.tower} roof={M.roof} windows={5} seed={7} />
       <Tower position={[52, -26, -95]} r={2.6} h={34} wall={M.tower} roof={M.roof} windows={4} seed={9} />
+      </>}
       {/* valley + mountains */}
-      <Mountains mat={M.rock} />
-      <VillageLights t={t} />
-      {/* props */}
+      {skip.includes('mountains') ? null : <Mountains mat={M.rock} />}
+      {skip.includes('lights') ? null : <VillageLights t={t} />}
+      {skip.includes('models') ? null : <>
       {model(barrels, [-1.25, 0, -3.2], 0.4, 1)}
       {model(crate, [-1.3, 0, -5.0], 0.2, 0.9)}
       {model(crate, [-1.25, 0.62, -5.0], 0.9, 0.7)}
+      </>}
       {/* fire */}
-      {torches ? (
+      {torches && !skip.includes('fire') ? (
         <>
           <Brazier t={t} position={[1.15, 0, -1.2]} seed={1} />
           <Brazier t={t} position={[1.15, 0, -14]} seed={2} />

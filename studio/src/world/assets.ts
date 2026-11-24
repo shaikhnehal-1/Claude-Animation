@@ -29,7 +29,7 @@ const texLoader = new THREE.TextureLoader();
 const loadTex = (url: string, srgb: boolean) =>
   texLoader.loadAsync(url).then((t) => {
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.anisotropy = 8;
+    t.anisotropy = 1;
     if (srgb) t.colorSpace = THREE.SRGBColorSpace;
     return t;
   });
@@ -55,7 +55,9 @@ export const pbrMat = (p: PBR | null, rx: number, ry: number, extra: Partial<THR
     n.needsUpdate = true;
     return n;
   };
-  return new THREE.MeshStandardMaterial({map: c(p.map), normalMap: c(p.normalMap), roughnessMap: c(p.roughnessMap), roughness: 1, metalness: 0, ...extra});
+  // Lambert + normal map: far cheaper than PBR in software rendering, looks the same on rough stone/wood
+  const {color, ...rest} = extra as any;
+  return new THREE.MeshLambertMaterial({map: c(p.map), normalMap: c(p.normalMap), color: color ?? '#ffffff', ...(rest.emissive ? {emissive: rest.emissive} : {})} as any) as any;
 };
 
 export const useHDRI = (name: string) =>
