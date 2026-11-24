@@ -1,0 +1,7 @@
+node_modules/
+studio/out/
+*.mp4
+videos/*/voice_samples/
+videos/*/pilot/_tts/
+studio/public/ph/
+studio/public/models/
